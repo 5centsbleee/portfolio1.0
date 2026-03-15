@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Mini Tang | Portfolio</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#fcfcfc",
+                        "background-light": "#FDFDFD",
+                        "background-dark": "#191919",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans JP", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        '18': '4.5rem',
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #FDFDFD;
+        }
+        .letter-spacing-wide { letter-spacing: -0.02em; }
+        .thin-border { border-color: rgba(0,0,0,0.07); }
+        .dark .thin-border { border-color: rgba(255,255,255,0.07); }
+        
+        .project-image {
+            filter: grayscale(100%);
+            transition: filter 0.6s ease, transform 0.45s cubic-bezier(0.34, 0.16, 0.3, 1);
+            cursor: zoom-in;
+        }
+        .project-image:hover {
+            filter: grayscale(0%);
+        }
+        .project-image.zoomed {
+            transform: scale(1.04);
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15);
+            cursor: zoom-out;
+        }
+        
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+    </style>
+    
+    <!-- React Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 selection:bg-slate-200 dark:selection:bg-slate-700">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
+
+        // Helper to scroll to section smoothly (works across pages)
+        const scrollToSection = (id) => {
+            // First navigate home if not already there
+            if (window.location.pathname !== "/") {
+                window.history.replaceState(null, "", "/"); // optional: clean URL
+                // Because we use MemoryRouter → better to use navigate()
+                // But for simplicity we can do this:
+                window.location.hash = "";
+                setTimeout(() => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                }, 300); // small delay to let home page render
+            } else {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        };
+
+        // ─── Unified Nav ────────────────────────────────────────────────────────
+        const Nav = () => {
+            const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
+            const navigate = useNavigate();           // ← add this
+
+            const toggleDark = () => {
+                document.documentElement.classList.toggle('dark');
+                setIsDark(prev => !prev);
+            };
+
+            return (
+                <header className="fixed flex items-center justify-between px-6 md:px-20 lg:px-40 py-8 thin-border border-b bg-white dark:bg-background-dark w-screen z-50">
+                    <Link to="/" className="flex items-center gap-3">
+                        <div className="size-6 bg-slate-900 dark:bg-slate-100 flex items-center justify-center rounded-sm">
+                            <span className="text-white dark:text-slate-900 text-[10px] font-bold">MT</span>
+                        </div>
+                        <h2 className="text-slate-900 dark:text-white text-sm font-bold tracking-[0.2em] uppercase">Mini Tang</h2>
+                    </Link>
+                    <nav className="flex items-center gap-10 md:gap-12  ">
+                        <div className="hidden md:flex items-center gap-10">
+
+
+                    {/* Changed from <a href> to <button> + onClick */}
+                    <button
+                        onClick={() => {
+                            navigate("/");
+                            setTimeout(() => scrollToSection("work"), 100);
+                        }}
+                        className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs font-medium uppercase tracking-widest transition-colors"
+                    >
+                        Work
+                    </button>
+                    <button
+                        onClick={() => {
+                            navigate("/");
+                            setTimeout(() => scrollToSection("about"), 100);
+                        }}
+                        className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs font-medium uppercase tracking-widest transition-colors"
+                    >
+                        About
+                    </button>
+                    <button
+                        onClick={() => {
+                            navigate("/");
+                            setTimeout(() => scrollToSection("contact"), 100);
+                        }}
+                        className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs font-medium uppercase tracking-widest transition-colors"
+                    >
+                        Contact
+                    </button>    </div>
+                        <div className="flex items-center gap-5">
+                            <button onClick={toggleDark} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                                <span className="material-symbols-outlined text-[22px]">{isDark ? 'light_mode' : 'dark_mode'}</span>
+                            </button>
+                            <a className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">
+                                <span className="material-symbols-outlined text-[22px]">language</span>
+                            </a>
+                        </div>
+                    </nav>
+                </header>
+            );
+        };
+
+        // ─── Unified Footer ─────────────────────────────────────────────────────
+        const Footer = () => (
+            <footer className="px-6 md:px-20 lg:px-40 py-16 border-t thin-border bg-white dark:bg-background-dark">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 max-w-7xl mx-auto">
+                    <div className="flex items-center gap-3">
+                        <div className="size-5 bg-slate-900 dark:bg-slate-100 flex items-center justify-center rounded-sm">
+                            <span className="text-white dark:text-slate-900 text-[8px] font-bold">MT</span>
+                        </div>
+                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">© 2026 Mini Tang</span>
+                    </div>
+                    <div className="flex flex-wrap gap-8">
+                        <a className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 text-xs font-medium uppercase tracking-widest transition-colors" href="#">Instagram</a>
+                        <a className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 text-xs font-medium uppercase tracking-widest transition-colors" href="#">Behance</a>
+                        <a className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 text-xs font-medium uppercase tracking-widest transition-colors" href="#">LinkedIn</a>
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const ZoomImage = ({ src, alt, className = "", aspect = "aspect-[4/3]" }) => {
+    const [zoomed, setZoomed] = useState(false);
+
+    return (
+        <div className={`${aspect} bg-slate-50 dark:bg-slate-900/30 rounded overflow-hidden shadow-sm relative`}>
+            <img
+                src={src}
+                alt={alt}
+                onClick={() => setZoomed(!zoomed)}
+                className={`
+                    w-full h-full object-cover transition-all duration-500 ease-out cursor-zoom-in
+                    ${zoomed 
+                        ? 'scale-150 md:scale-200 lg:scale-[2.2] cursor-zoom-out z-20 shadow-2xl' 
+                        : 'project-image hover:scale-105 hover:grayscale-0 grayscale'
+                    }
+                    ${className}
+                `}
+                style={{
+                    transformOrigin: 'center center',
+                    willChange: 'transform',
+                }}
+            />
+        </div>
+    );
+};
+
+        // ─── Home ───────────────────────────────────────────────────────────────
+        const HomePage = () => {
+            return (
+                <div id="about"  className="relative flex min-h-screen w-full flex-col">
+                    <Nav />
+                    <main className="flex-1 pt-20 md:pt-24 lg:pt-28 ">
+                        <section className="px-6 md:px-20 lg:px-40 pt-28 pb-40 max-w-7xl mx-auto">
+                            <h1 className="text-slate-900 dark:text-white text-4xl md:text-6xl font-light leading-tight tracking-tight mb-12 max-w-4xl">
+                                Hello, I’m Mini Tang, a graphic designer based in <span className="italic">Hong Kong</span>.
+                            </h1>
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                <div className="md:col-start-6 md:col-span-7">
+                                    <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl font-light leading-relaxed mb-10">
+                                        With a focus on Japanese minimalism and thoughtful branding, I create visual identities that breathe. 
+                                        My work centers on the intersection of functionality and quiet aesthetics, helping brands tell stories through 
+                                        intentional design and refined typography.
+                                    </p>
+                                    <div className="w-16 h-[1px] bg-slate-900 dark:bg-white my-10"></div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ── Category 1 ── */}
+                        <section  id="work"  className="px-6 md:px-20 lg:px-40 py-24 border-t thin-border">
+                            <h2 className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-[0.3em] mb-16">01 / F&B Branding & Identity</h2>
+                            <div  className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24">
+                                <Link to="/artisan-coffee" className="group cursor-pointer">
+                                    <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800 rounded mb-6">
+                                        <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out scale-105 group-hover:scale-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwkFWKYd9fuYEix5FWgfe9Gr_vJ8RffFeS0c4pY9bIUU21CF8rPe3r7ArIh7LNnGQas5GRieSIj9xPHQDjErnVQrqtJo1z6MMt9gsZuqXYALrIFM9tCLFDJ4zLUgRlZcsukXJ66ErQhW01qx-37xa0nRY4lnxJB_fLG0m3Ns2UY4BvQOEkIvysGe2AhVH1x8_-wpJa4nd7Q8_uE9bitjcmND_nIx6EUmWX5S8aOYApl2VltHPWKQ4Kpejm6yJU3LPZ9G8wKrE_1ug" />
+                                    </div>
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium mb-1">Bristol Chain – Brand Evolution</h3>
+                                    <p className="text-slate-400 text-sm font-light uppercase tracking-widest">Brand & Visual Identity</p>
+                                </Link>
+                                <Link to="/bistro-menu" className="group cursor-pointer md:mt-20">
+                                    <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-800 rounded mb-6">
+                                        <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out scale-105 group-hover:scale-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwxJ4ZvNFHpHt3H_b9ysUgto49dWAw8HtZrJd9W91-3998jFXikTlbhGDeJf6iUBdVnLMxqy3sJhN_9ogTlH8NJ9kG6OAzk5hKfII2x_JhrMTpBYeo1vHtw5e0kA1iVWgPjebstgnwm3t9Df80jduGwu8ZCwihHhIWxFgt_FjlGrhyOMFyvLefyls31yHJh2nTOKZ7Jvhbd_t0w4MEiqyOFKF1rx6aDQNlgqmVUL5dexgLxdmXFVHGlup09a63OnbDAq3beHMEy2s" />
+                                    </div>
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium mb-1">F&B Startup Branding</h3>
+                                    <p className="text-slate-400 text-sm font-light uppercase tracking-widest">Branding & Visual Identity</p>
+                                </Link>
+                            </div>
+                        </section>
+
+                        {/* ── Category 2 ── */}
+                        <section className="px-6 md:px-20 lg:px-40 py-24 border-t thin-border">
+                            <h2 className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-[0.3em] mb-16">02 / Packaging & Merchandise</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24">
+                                <Link to="/eco-juice" className="group cursor-pointer">
+                                    <div className="aspect-[4/5] w-full overflow-hidden bg-slate-100 dark:bg-slate-800 rounded mb-6">
+                                        <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out scale-105 group-hover:scale-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDROm3GxxAAfyXg_rtEOLuId2ytiXlRlHhISVsajpuCR2GqDPoD7RFYUaEUcIgVt-rUKHb5wYWCkd0K8cmPo4nCoPNsVq42U44EE2LW-lW7OOlHD9PmiqJ03n8iUlra5P0_Ma3yUE45AYpAjB1mxovkAx-3OL-3gMoQXqZd27OAPBdfJBlEmfMcQAsAsH4e_xCQijPTmKWWWywHoo_KNNewKUhvOWxEFBlWS7dNEqUXVy-0s-361L_mZcvKg2HFZGTkZXQkFZwEEzg" />
+                                    </div>
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium mb-1">Packaging & Merchandise</h3>
+                                    <p className="text-slate-400 text-sm font-light uppercase tracking-widest">Merchandise & Apparel Design</p>
+                                </Link>
+                                <Link to="/limited-tote" className="group cursor-pointer md:mt-[-60px]">
+                                    <div className="aspect-[4/5] w-full overflow-hidden bg-slate-100 dark:bg-slate-800 rounded mb-6">
+                                        <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out scale-105 group-hover:scale-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyf4fKoBGEwXoEXGOoZxQC67Y2rDPqC-3ICz2XTToyfiUL07KMDcM8X9Huk7YsFDro6XTCUv031smw3o02N-sxsXOZRAQbM89kTJc0dMqEx8QYXSFaIIrvrIkxPJ2mxN_uR_GacLbd3VDyU96Tw_j8pXbwQUSTX3jjKf5S3Usc8ep1M_4dIFg7F3F0nxEaPLFAcsZ2J98MV9jz3gUW8JKdu37iGhZXyAT17Syqw_3Enf6pqMf933JO85OCA845pQuZdZSakwh41WE" />
+                                    </div>
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium mb-1">Illustration</h3>
+                                    <p className="text-slate-400 text-sm font-light uppercase tracking-widest">Art & Illustration</p>
+                                </Link>
+                            </div>
+                        </section>
+
+                        {/* ── Category 3 ── */}
+                        <section className="px-6 md:px-20 lg:px-40 py-24 border-t thin-border">
+                            <h2 className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-[0.3em] mb-16">03 / Special Projects</h2>
+                            <div className="grid grid-cols-1 gap-16">
+                                <Link to="/hk-street-art" className="group cursor-pointer">
+                                    <div className="aspect-[21/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800 rounded mb-8">
+                                        <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out scale-105 group-hover:scale-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxlfyJxsn_Yzd_yZ-uslAk81LtqKfVRGzRWx1XHHFWXlpFP8TX0JaTExwiQR_61sWmAsUK_6wENu1PsPfKIHmgLdeDh1uU9cRxWEYjAsyA2D5MVRBbBsb1O6s4cST9qRs3cipIhLFvQXvS55v5ZF-1V-2zdSTbWrb8wIgJYegdqdxFLU-J3Ky7KyioGzKT-O4iihpb-6VVgfUNcjEzrjBFrHLbIvdIjIXmfrSttYXQ4IN81YHcuTfb6uBzaKN3uCQEY7ahDRblQ8c" />
+                                    </div>
+                                    <div className="max-w-xl">
+                                        <h3 className="text-slate-900 dark:text-white text-lg font-medium mb-2">Neon Sign & Photo Album Custom Productions</h3>
+                                        <p className="text-slate-400 text-sm font-light uppercase tracking-widest mb-4">Individuals</p>
+                                        <p className="text-slate-500 dark:text-slate-400 font-light text-sm leading-relaxed">Bespoke Pieces for Restaurant and Graduation gifts</p>
+                                    </div>
+                                </Link>
+                            </div>
+                        </section>
+
+                        {/* Contact CTA */}
+                        <section className="px-6 md:px-20 lg:px-40 py-40 bg-slate-50 dark:bg-slate-900/40 border-t thin-border">
+                            <div id="contact" className="max-w-3xl mx-auto text-center">
+                                <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mb-6">Available for freelance</p>
+                                <h2 className="text-slate-900 dark:text-white text-4xl md:text-5xl font-light leading-tight mb-12">Let's create something meaningful together.</h2>
+                                <a className="group inline-flex items-center gap-4 text-slate-900 dark:text-white text-xl md:text-2xl font-medium border-b-2 border-slate-900 dark:border-white pb-2 hover:gap-6 transition-all duration-300" href="mailto:hello@minitang.design">
+                                    hello@minitang.design
+                                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                </a>
+                            </div>
+                        </section>
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        // ─── Project Detail Layout (shared logic) ───────────────────────────────
+        const ProjectDetail = ({ title, subtitle, heroSrc, client, services, year, concept, images, prevLink, prevLabel, nextLink, nextLabel }) => {
+            const navigate = useNavigate();
+
+            return (
+                <div className="relative flex min-h-screen w-full flex-col bg-white dark:bg-background-dark">
+                    <Nav />
+                    <main className="pt-28 flex-1 max-w-5xl mx-auto px-6 md:px-12 lg:px-20 py-12">
+                        {/* Breadcrumb */}
+                        <div className="flex flex-wrap items-center gap-3 py-8 text-sm">
+                            <Link className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" to="/">Work</Link>
+                            <span className="text-slate-300 dark:text-slate-700">/</span>
+                            <span className="text-slate-900 dark:text-white font-medium uppercase tracking-wide">{title}</span>
+                        </div>
+
+                        {/* Hero */}
+                        <div className="w-full aspect-[5/3] md:aspect-[16/9] bg-center bg-cover rounded-lg overflow-hidden border thin-border shadow-sm mb-12" style={{backgroundImage: `url("${heroSrc}")`}} />
+
+                        {/* Title + Subtitle + Metadata */}
+                        <div className="mb-16">
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight mb-4">{title}</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-xl md:text-2xl font-light italic max-w-3xl">{subtitle}</p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-12 py-10 border-t border-b thin-border">
+                                <div>
+                                    <div className="text-[10px] uppercase tracking-[0.25em] text-slate-400 mb-1">Client</div>
+                                    <div className="text-sm font-medium">{client}</div>
+                                </div>
+                                <div>
+                                    <div className="text-[10px] uppercase tracking-[0.25em] text-slate-400 mb-1">Services</div>
+                                    <div className="text-sm font-medium">{services}</div>
+                                </div>
+                                <div>
+                                    <div className="text-[10px] uppercase tracking-[0.25em] text-slate-400 mb-1">Year</div>
+                                    <div className="text-sm font-medium">{year}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Concept */}
+                        <div className="max-w-3xl mb-20">
+                            <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-slate-900 dark:text-white mb-6">The Concept</h3>
+                            <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed">{concept}</p>
+                        </div>
+
+                        {/* Gallery */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-24">
+                            {images.map((img, i) => (
+                                <ZoomImage 
+                                    key={i} 
+                                    src={img.src} 
+                                    alt={img.alt} 
+                                    aspect={img.aspect || "aspect-[4/3]"} 
+                                    className={img.className || ""}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Prev / Next */}
+                        <div className="border-t thin-border pt-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-8 pb-20">
+                            {prevLink ? (
+                                <Link to={prevLink} className="group flex items-center gap-4 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                                    <span className="material-symbols-outlined text-lg transition-transform group-hover:-translate-x-1">arrow_back</span>
+                                    <div>
+                                        <div className="text-[10px] uppercase tracking-widest text-slate-400">Previous</div>
+                                        <div className="text-base font-medium">{prevLabel}</div>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <button onClick={() => navigate('/')} className="group flex items-center gap-4 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                                    <span className="material-symbols-outlined text-lg transition-transform group-hover:-translate-x-1">arrow_back</span>
+                                    <div>
+                                        <div className="text-[10px] uppercase tracking-widest text-slate-400">Return</div>
+                                        <div className="text-base font-medium">Home</div>
+                                    </div>
+                                </button>
+                            )}
+
+                            {nextLink && (
+                                <Link to={nextLink} className="group flex items-center gap-4 text-right ml-auto">
+                                    <div>
+                                        <div className="text-[10px] uppercase tracking-widest text-slate-400">Next Project</div>
+                                        <div className="text-base font-medium font-semibold">{nextLabel}</div>
+                                    </div>
+                                    <span className="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
+                                </Link>
+                            )}
+                        </div>
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        // ─── Individual Projects ────────────────────────────────────────────────
+        const ArtisanCoffee = () => (
+            <ProjectDetail 
+                title="Hong Kong-Style Bristol Chain – Brand Evolution"
+                subtitle="6+ Years of Consistent Design & Quality Oversight for a Growing Mainland China Chain"
+                heroSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuCykAYD5ex0NpEoUnb7HED78x1jqXzU3ACf39s4sJDM06TKp1BleInMufI3SPQKuIJvEh4Yp_iNgrRpnCYIxi96ZW_AI5oZ69JOgHPuTUP_Oz1Lez5nJKTGQ1UndYJ9GVP58JIILc73yy_AvO1qZ8VvLrw0N6Lff9NkdfsNtX9wt_tNSCUkQMl3wlBzXWo0_Rh__JK9r2nxxj2w2GoDkhuXruk4hssIqhx_nFeS2gdpFw4JY8vEDUCtoHcOzBCoIU9ZL8NY_OjKigM"
+                client="Hong Kong style bristol in Mainland China"
+                services="Branding & Visual Identity, Production & Quality Control "
+                year="2018"
+                concept="
+                For over six years, I served as the primary designer for a Hong Kong-style cafe chain expanding in mainland China,
+                 blending nostalgic cha chaan teng vibes with modern execution. My role covered end-to-end visual touchpoints—posters, 
+                 seasonal menus, in-store accessories, environmental graphics, and material selection—while ensuring production quality
+                  matched brand standards through vendor coordination and on-site checks. This long-term collaboration built a cohesive, 
+                  reliable identity that supported business growth and customer familiarity across locations.
+                "
+                images={[
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuD_KiZ0ndkAcE4SKXz_K66OaIcnzzUxblB97aaQ23SZaYqkOFxIE2yK_lSRSrnIwf4dxHHp7kpoys5nprM1_4Vb2FacWyZnBm-3jUtYAu7YKeDOVCxT1tm8cMNjX7UTFMwExaDCavYKhLZ5mynGfU9V6-Ob5Uf20CnId-d92BDJL8DZp6uBWfIUzLImCC1-JZIm86OkOj7n1PSvIShAS7R7-hLR1DTGV8xZunEKy-8H412sDng8iZf1cFIz7IPvViq9IkDnJn-bAWI", alt: "Sketches" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCxolH1sxbqnk9sO9xjGCLrcTJR-roKm7Bd8iJQo7bauJx1VqOx58ZVWSjIIOX8r9s15RHK-0geMK5cxD2bVjT4GvnGSEj00x9B2soNUXLPshxdf-i5_RetNwVW0t0WBUk66Z6EdPITCeF0WucNgMi0IgeGZcyZbCYcPQOVl6LRTr7xmbwF7EHFggqFcZpxI0KsHaux7pl5iw7fSLn1ffU8pxDLGcmOzRofs9BqpFNLzJY1W5NFUbTU2MXO1k9TqmhlLnUGvLDX2Hk", alt: "Interior" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDh4WafFTLsrYmCeGgWhvIDSPCmBGbmc8w4uZCFYkg17bas20M9qsOxp-5exBtUKQFYbK2Z7zrvjFBoPImqOGryXIANQgfw13SojkqrGov1zHc81kv0ewbdF0AkKpUy7Ya5mXZUG06cmURszez_RN03R44xnvmFt7LeKa8fRUf2JW0EWVzbtCAmSOfSjlc8hcktg0h0FkLtrugiata9oRCrpoot55Sq0_q4KEBq4dOEpVeTXusW8lqj7Rg2l8vn5FPH5XbXZAKM4VU", alt: "Typography", aspect: "aspect-square md:col-span-2" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCl8iU-y4qOpOGLv8mZJoJptBaNR0DtYjq6lqvybTd6mkAjeMQs4vUQGuzSgDuoV-APY7g60_c-dMRjB05D8K51KS68mYPt8oC_Al_XDefVAG5Lylt-wpHjlzxscX4WVtwBuiAZofuDyVOUuVjl_dk1xWSLV47k_SgmcOQlnKhKxUpjVMBjqKw3cY1o80g0PVHm-rTdOCsmn8lp-EthHFS0HRWmEZb50uadgsZ2G4c7Zo2mSk1tAIQzRwCryYQIm63wSophXgQ7ec", alt: "Shelf", aspect: "aspect-[3/4]" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDVJsmsAVyzhArbXfyZ5Tn1XO7h2Z0EX7jDBZuVVg2NvgVN_D45knoSJ6oTU5kVM1V0iK0TE9uY-rFKyrwFlmELLWb7nsixK_DOZ-uItxrUAF6dEpu8okLK5NGOanU3Mss6LMIHVxS-VKaQ7ZpBou97Svj-_L58yUZ4VH4jIBYMh0fahuIvTzON4DDlmRGQ-erg9L373AviVhiSImuMT6zZ4_m7G5n69p34Bu8YHoPa3AT9x3JBZBpcSlNfEkfI9szxTBj7epz48d0", alt: "Cup", aspect: "aspect-[3/4]" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuD3FutSpMnSAozpPAr5DRECFLs2FmkGnkJkfXzQvSOU2hvh4vJq76_ofaxiGSO8xmmI3OTpvS-abfcDUJNRWyqWtNni-wBSmKqygC7GNSfyTG32SR5DnVvO9hoJ9Ee8dHOvnvPzcrNnFPWkoqXfsOPTf4XvvyoQSIiMcCroW9XF8LxMqrcI-m1e4Jwn_S7wVC1aGpJsMs6LCKsCdA7W_X_hwP_QHgA6gryzrGAXZ8hTugh8V6c_QoNB-UOcKq14q7ociPCr3G0Q-yQ", alt: "Exterior", aspect: "aspect-[16/9] md:col-span-2" },
+                ]}
+                prevLink={null}
+                prevLabel="Home"
+                nextLink="/bistro-menu"
+                nextLabel="The Bistro Menu"
+            />
+        );
+
+        const BistroMenu = () => (
+            <ProjectDetail 
+                title="F&B Startup Branding"
+                subtitle="Vibrant Visual System to Capture Customer Interest from Day One"
+                heroSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuBCbryUoTFHVkAyvNEQMBcoqa5C8fCMPDoDZY1sbPMkj7ozcc3ZWMZ1-QYa4jpap3kTE2Z8jRminXkMAcP8k3_HZ-qrBQwF0Yz39SRZsGEdqvMZYCYojcgyw6PnBFyja4oQXTeV5Mh6Vslj8bxFmPqfRvj0hOhrFjHKzD-SJ77ZXvUnQCGwTq9m1h_F-kcR4bYiJfIWv3JNkuu76tj-4go6Mk53IuyY1xvqEyT3tBIhmsOpruV4LiMcb3t8cKwfvupRIYJJa5VjRdo"
+                client="F&B start up"
+                services="Branding & Visual Identity"
+                year="2023"
+                concept="
+                Designed a fresh brand identity for an emerging F&B startup, using strong, saturated colors and dynamic imagery to stand out in a crowded market. The approach focused on creating immediate visual impact—through eye-catching posters, menu layouts, and digital assets—that communicated energy and approachability.
+                 This bold direction helped the brand quickly attract attention, differentiate from competitors, and build early customer curiosity and foot traffic.
+                
+                
+                "
+                images={[
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDsUWG7767dY1N1Sz8QeuKxVzqwNEivlZ6J-2tlEe_mW5lIqrpxitaPNhSdKmOw4zi9B_pV90t1YB4-YvGh6UGhepPJPfmh7Q_LPTD9PF5DwXHBN9exj3ZQT4NTgDIpLx9-34qDy6viI_Olk-WPdmM_lLTbquoyzrmFCQBIVF8zSmJnrUbNU72JR1FvmQROBCtE9kM6fSN0YBbJs6p7gaSsgce8-lm9lyRO8iLQi1b4uzs-WT8FvGQ7vXk5GrUGXGHvijOKoKOsRts", alt: "Menu Typography" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBZJYeQdWKSsKPnBrZ9lmPuMtqcBb4eSD0icWJIyGKmoDbnqocXhwXbZmQrs-RJ4iUOlZNbLYD_zxJOsz7RL4yOIh8bpfCp7UiqWxZUVzDl0FVLvU0mCAIyylCgZMsd0WtVFkXywMoDDjVJIxrcTExsefRcJp-r53HW8ym8bVHvQ3wgKwHVGZT8J5IM0PrGqfZ0y4sEXiHdUFj-ZxsYXACpS5v1kc-48yJzDqs-kssKG9xJc4cl4a2LO_KR9B2EQVAmDNKGStsiHpE", alt: "Paper textures" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBZJYeQdWKSsKPnBrZ9lmPuMtqcBb4eSD0icWJIyGKmoDbnqocXhwXbZmQrs-RJ4iUOlZNbLYD_zxJOsz7RL4yOIh8bpfCp7UiqWxZUVzDl0FVLvU0mCAIyylCgZMsd0WtVFkXywMoDDjVJIxrcTExsefRcJp-r53HW8ym8bVHvQ3wgKwHVGZT8J5IM0PrGqfZ0y4sEXiHdUFj-ZxsYXACpS5v1kc-48yJzDqs-kssKG9xJc4cl4a2LO_KR9B2EQVAmDNKGStsiHpE", alt: "Full tactile view", aspect: "aspect-square md:col-span-2" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDsUWG7767dY1N1Sz8QeuKxVzqwNEivlZ6J-2tlEe_mW5lIqrpxitaPNhSdKmOw4zi9B_pV90t1YB4-YvGh6UGhepPJPfmh7Q_LPTD9PF5DwXHBN9exj3ZQT4NTgDIpLx9-34qDy6viI_Olk-WPdmM_lLTbquoyzrmFCQBIVF8zSmJnrUbNU72JR1FvmQROBCtE9kM6fSN0YBbJs6p7gaSsgce8-lm9lyRO8iLQi1b4uzs-WT8FvGQ7vXk5GrUGXGHvijOKoKOsRts", alt: "Menu close", aspect: "aspect-[3/4]" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuC562BnXdGl2jKfIpjiXfGKqxSt0g9liHf9Sbm8nyZflU94S1QgCWJGISXKn38CVRtbAModsKjZuIc4gVxmyz-HMOvDvF2T_8X5hH1SWBCP7o46BbKIRW8GlglEQQXMz1-nTrHzvU-dHZ8nOxHB_RhTEsOcnLggyx-3jKDMGUnio7F-OygfZwWdAMm6GFJMI19koOlGTQrENAS-ZUV7aSESoT_a4nPE5Un4tjdvLG6xn6-UMbRv3yAIvFEHBDmnIUndlaZBzFlVKvA", alt: "Bar setting", aspect: "aspect-[3/4]" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuC562BnXdGl2jKfIpjiXfGKqxSt0g9liHf9Sbm8nyZflU94S1QgCWJGISXKn38CVRtbAModsKjZuIc4gVxmyz-HMOvDvF2T_8X5hH1SWBCP7o46BbKIRW8GlglEQQXMz1-nTrHzvU-dHZ8nOxHB_RhTEsOcnLggyx-3jKDMGUnio7F-OygfZwWdAMm6GFJMI19koOlGTQrENAS-ZUV7aSESoT_a4nPE5Un4tjdvLG6xn6-UMbRv3yAIvFEHBDmnIUndlaZBzFlVKvA", alt: "Row of menus", aspect: "aspect-[16/9] md:col-span-2" },
+                ]}
+                prevLink="/artisan-coffee"
+                prevLabel="Artisan Coffee"
+                nextLink="/eco-juice"
+                nextLabel="Eco Juice Box"
+            />
+        );
+
+        const EcoJuice = () => (
+            <ProjectDetail 
+                title="Packaging & Merchandise"
+                subtitle="Self-Initiated Designs for Stickers, Tees, and Hats"
+                heroSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuBogWxhJRUjuWZDGjvxNQYubUbEHLv8E18wA-pRHZULZQKlNbJ2zwf3889X8lZ2I-zIII_TULBhnhiZkH2M5Eebg-q63MaYpLwiPcmdXK94dDETt8ocYz_QuIxodUkARXuhpRnK1WDklCF58Zt_M55k56dEmoXuyQtTrLkRNb1CEgcDDGmoy46NsrJLWrawftJgYgjTabSa44psD-mNszy0bWpG28n2zriZte1gOW1bplkf2ioRK55xus8C-DN9yOlbALtRtG6CaB0"
+                client="Personal Interest"
+                services="Merchandise & Apparel Design"
+                year="2024"
+                concept="
+Out of personal passion, I created a series of fun, wearable merchandise including stickers, T-shirts, and caps. These pieces explored playful graphics, simple typography, and versatile applications—turning brand elements into everyday items people could wear or use. The work honed my skills in adapting core visuals to different formats and materials, while keeping designs light-hearted and approachable for casual lifestyle use."
+                images={[
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBo--pM8GQzFh-pI76uYXoRdTvDsBn9tBWEK6aGIt3UNjvpGf_-1jgGSOrMiZXtKKygzhC--ArWUih--SqqRqltWNaQ61AFkco_ayq5fa52MABmHmpiLB_rK6di-gGwQfAeiI_0H288npfmZDI62oSP55PLIprJRFjZcj8MpIHmgXF_o1HAw_VKnY-8ZbGekwyijb8DapClIH1TWfnoA_04Qpd9ll1YPOjkCfQEZEgSAm9X3vXiOigBICLd-FYwgt7MyV5cDHDw7o4", alt: "Box detail", aspect: "aspect-square" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuD5UwB_MxHFfcwYr6-_cjPhXu5U-Sih4tjNMKCRqQCsQLllveLS4Y8rcbWHwH-GUm8fIyGs7_hDlriH4cpdBSfDeVwvFTdejoUFHJ-AiSYiLPGE_Xhzvj9CaZQi-iDHnsocUA2-7koWe2R9DdZLxRQOmT3dRLipw2c55lHIqkVxh-MvMyoBu_AvgU2Qhl6VEC7-hYQhdugxhAoUklB_JOcXfg2X2FPUwTf9a2ds_P82RkL-nXtzK487oor9Rns0Z0GX51HznpT8WpY", alt: "Box side", aspect: "aspect-square" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCc2O1kjXDxbCBvkVnbqbSpFWhlwAfixKHjLKHs3WtosckbOdexdQUMOKEcd5vt9l9CdbDHZSkZuBpaHqndXM-gbBxqfF0JLfYnJltiaM8WFsg3AaqUw0ZxZ8CK-Z9e3IopqSOSBZ9EWvF9a9iKLPQ9dktRgA-QT74CxEwSW_uYimObWiHKcIfapQkdwn8b_RfXRWegLVWQLpK0SV4ILwrSCOyIitvRpbW6IRHdhCGDXvPpDfn6LxzdXAIe34Ad74hmyoklG8u0Mzg", alt: "Box open", aspect: "aspect-square" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuA-Anmg0kfFunGSa-svkifb1fuX0P7_WRRYdx7egPUN-1Z7Megg-Db4xOzQTJg8bwz3MteuWnjOmJdTQcF58zSYC6j0NuJyUYJj8eVrZi8M9A3jG3jkr6IMQwq6kvEEjTyi4X7t3CxOgWPrDaw2R8OPgsrzv_HKQyzsFipgoc7m5Z-LWSRKVXmVqrcKre-DOR27qcyUCeL3geJwcfouIObsdpkRv3rdmMN5Y16BI65KSVoB6e2lli1wLb1kNZYdFBnMucFY57YVWi4", alt: "Box group", aspect: "aspect-square" },
+                ]}
+                prevLink="/bistro-menu"
+                prevLabel="The Bistro Menu"
+                nextLink="/limited-tote"
+                nextLabel="Limited Edition Totebag"
+            />
+        );
+
+        const LimitedTote = () => (
+            <ProjectDetail 
+                title="Illustration"
+                subtitle="Exploratory Visual Storytelling"
+                heroSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuC8wV4X-BbKnRz8047sDQHGQb7WsnIe2ItiE06xdK5B-NxVK0sxCKvb_g3Pvx75ZV8QJzrNM_ES2LwqzMGe4AICD4YDUgZA5obUS-95wKHKpgfsmc7Dm71_Lu1BrfuVxCs0Jq-5U2xeWSv-aPjr1b8deFxlTtUJLolfCgfK8GnEiqr7OyLOJNuvJRsIOAL7_m_4XDtXuOpLBHNtjhX3UuehjUeSFYt5jpodXUSg7XNPhgHmKdPnIMyAG2Fxtv7d3xO2eGYUFgjRnSE"
+                client="Personal Interest"
+                services="Art & Illustration"
+                year="2024"
+                concept="A collection of self-driven illustrations created purely for enjoyment and skill-building. Each piece experiments with composition, mood, and detail—ranging from character studies to atmospheric scenes—allowing free exploration of style and technique. This body of work strengthened my ability to convey emotion and ideas visually, serving as a foundation for more structured client projects in branding and packaging."
+                images={[
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDU8zQKTxT-FF_qHGtxITmNXR3qwG--38PJRKaVXjAZOGtgIMZc19DsMjpkHhW6HZ6yK-ttsNywSdbgA8ubSmGGX73N--JzDRbdiiohoc4U5UHpYxYxDL-mXnACoMYhKUcY4Iapc4_YzdA_Cg7b61hUKImA6uVozNA_qxXq1R2QgbaJK-Rprv1DiZo8alionCpHDybw25OTSdKdb4tJQXWfoKYWZ8R5VIz_NDMvLUC-gwv4eSmgPK5Hd_ooF5yZ6CLohfACEYAASzg", alt: "Tote detail 1" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDjukob3eDpzkKzbBkYaEdgnad2OLO2EDpFlfMYfvL6BVEa6mU-6x2sNUxb_Ik1sS0RzYjgU5ur-dLo4uFtn-IR6mx0DPzjhujiUaSFk3RqABGdOz0CKo5eXRNVAFxv_y-vJWWIXeFFIzyYmwMG-TIIlc1QjF6ARBJ5h7mPPa_YVuMOc6A-7iE9WlSZLH3J5kGKldrXsOzb1N6HddMxw-IjqZv7fWU3u_p4A0HVhmrOdYM78Bu9wNAw-0UBT0iqFEVcanpXVfAbdts", alt: "Tote detail 2" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDhoBKgbfIHlBbNPqkUhEYYG6vnJfS_GTO30JcZ1yDIp1fZp6jWjY5TznIQ_LEifcfvV1cTQa36kDACQiP5BemoJZi2nvX57l0IfPP8f_I-aZrGeirAjZsNn_v_iobS-YaCIBqDrUsknGlh5pXdseNhlQOmrxFNR_4NBz3fye3OoHEZuy5_VZbHYtb4z-JBRsjdxMCMAlBa7F5X0lkS0d50gOT_JpiID6MX17a_iu64j2C0P7kS9Q5ItvNwez_N-NizYmQrh5PQtog", alt: "Tote full grid", aspect: "aspect-square md:col-span-2" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBLvJAfH19LnzUXXo7DmjPj0kg77lclK30Sid0u7vLpWxAm36U9aNqswxkvbTHt3_IKRY8k6XIdmkjx3LohDQLHnTMT0ANRi7nVIFAqc0Iac0gczQCw7tOcW1Z8BO2kqr6Xsse6RKqO0TqQq6VNp1KOr7FCYN-eS50ZOqtnwQqXAwGuyNDTPT5JW70BvtotIKOwePCFYbX2f3bjduTXWaD8a9fqRaTDrunIu2-dp-euiAlsIEE84JM1B7ZrvTReLfe50nhdpub9keo", alt: "Tote style 1", aspect: "aspect-[3/4]" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDvvY6BGIQbIDRUEopb3YyKrNAO4xJ6CvHurwxTAzXB7oKkTdrwWyCJvKAUdDOZb2MOJMtz2AQdGiL2VpgvVoIyXTGN_m8nNS3IX6UZC9lOTNtYaxmWTT8IJvSYsQtZhmVSBYWtfuoOgTJ5Phcwb3ZBqtGR9bcG_87WbQDx3-XOAAU_0Y_2ROBGZnZZbXTF-ZzAzoHcTqVEakekm_LFiGZgDgqavvkwGiIrDKzOFoPhr0LnTXUpcSeTBaPD_E0MKCoP3JPVaWsqKU8", alt: "Tote style 2", aspect: "aspect-[3/4]" },
+                ]}
+                prevLink="/eco-juice"
+                prevLabel="Eco Juice Box"
+                nextLink="/hk-street-art"
+                nextLabel="Hong Kong Street Art"
+            />
+        );
+
+        const HkStreetArt = () => (
+            <ProjectDetail 
+                title="Neon Sign & Photo Album Custom Productions"
+                subtitle="Bespoke Pieces for Restaurant and Graduation gifts"
+                heroSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuADWKvFO6ZEt40tzVA5NFOFlUzo1CeQ7bQeqx5-v8O6QrkEexRf_-IOZoe9qUvglNyKLy5iURl4eyVAgB7MYcyhakkiGJ30pvHo7-0c4ebi_GaSRlydOqiFcUAZiZugOSuJC4-9Hak9MSzufzQYUrIU8qVuFkAn6MCCD7zUQTuT18XHSZ-FV72Ol27TfFzI4MxnGqmd9IrwNwk2dkNOX9W0tiYoZHp-N4TTvvEq6ie7Fe_sl3thlb-eSFrQ0h1d5VN4rkPpdmYHPHw"
+                client="Individuals"
+                services="Custom Production"
+                year="2024"
+                concept="Handled two distinct custom projects: a custom neon light installation for a newly renovated restaurant, designed to spotlight their signature dish and draw in passersby with glowing, eye-catching appeal; and a handcrafted photo album production tailored to client needs. The neon piece combined practical promotion with ambient enhancement—ensuring durability, safe installation, and maximum visibility—while the album focused on thoughtful layout, material choices, and print quality for a meaningful, tangible memory object."
+                images={[
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBp7sr8WN9kWHH2CVmXqHg2qS9Wh4V4_mn3qQ_ww5NW2kBFmgcdjaIS3WmOFolGXLjYEbvQXyQXBpBechCia0LNhy4Hi8ayD9JOtRFKZ-eiGOPljLl5irBjd9jv3hHHKCVZa6o1nH2b9Xg2BrupKSvCzBzbN5dLEIwJLfAcgkRnsSnSipQXt6rvr6A4eWC5T8O6JFVOoSfkJKHORqS6qQwTwgedOqVjVmYKGuvtqPhhPpBIlbUq0M452J4tq3bO8I5SvCQ5pORPlXo", alt: "HK Artwork 1" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBY0i9luQka3Ip0_T099Uk9j1WjYh6w2FunX1revqyOVCldgvBpqdc-PP3SU0JMzsb8sc5QkITk0R4fHHiTscP8s1U7WkwPNJ7DdrMN2vqp19gVdQFmlZ_XGP6A9MoU1xwdpW6AVfvYJKYwPQ8rLib3jHWz-v-_EuLW9J6FW3RdUKw5P8YqWt-iuBUbQo8qJfrX1ZiVqpWSI2mJSd1sfvvJUB4ijO04JI_2yiDaauYZvwNTRyu7AHrN_xIQg3nANwRl1SfRK_ZTtgg", alt: "HK Artwork 2" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuChfUjydo5PJOkVtESK4VTuhfcIlawGSiGVQqcn589_ly3PmfvwxUt-Kviq2oYg_i8Ot_wplLXudGJHrX-CPPNO2Z8Lx9oQtQzseUt3vJByytzyuRIKqYH2j__f4hHLK6wsS0irtlLfUV4lHhImozEmbmhV_Nv6iCCArjX8tshg_QD1ka40k2OuOsM8YAXhr2GLXNcmJlGVO26Px0Ump091CbqtFUDZsbkdYd7L6srq1Ht2EeUvmqRE0tZ8eomXbsK4iI6TaAtjWL0", alt: "HK Artwork Square", aspect: "aspect-square md:col-span-2" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAop4w24JHb6VGXVcZa1oscEf5LY1ZhjGL90tTpdXW1vuw018Z06RlNgu_CYY21DaxtEOdfBCNe54dpljZ7ROFLD4dB4lKu4Qt_MTvWOZwPxNwEKnD9Fm4LjT50YxkQ-xVScM_810YtXDvTx_hSJChSzpgbYObUxaPwkjUiOGUxvNhCIMiicmOl9iDbhcJ1whGth9KCpvmbFT1iHeK846emQALXJRTdXlrdmzCUjE4eCPzt4fnua9fhpQCJADh0bAAznweAJlkerxM", alt: "HK Artwork detail 1", aspect: "aspect-[3/4]" },
+                    { src: "https://lh3.googleusercontent.com/aida-public/AB6AXuA65YM57qmpvXNshAblzanLJM7rAVkAx1oxemsbeOxFlJCwUAa6cYTbcGgNyR067JwExwX6xTzexlhwbwVEobq61l80EzQyJLmX2fxi7w7Rywx3TXznfrpDjE4BWhIkL3AUkwj8OU-0fL3P_jpMd4oCqfYvkvMTQb4hbaPCshF9GwkPcxqzc5CD7sfoI7F1MG8EOgL5wRTSo3Ghyo0oUNRieP7gSYr5PDufq9w8ADPkzHFktWdttMbejT28hahrJ0IR7QD7CDsvwac", alt: "HK Artwork detail 2", aspect: "aspect-[3/4]" },
+                ]}
+                prevLink="/limited-tote"
+                prevLabel="Limited Edition Totebag"
+                nextLink={null}
+                nextLabel={null}
+            />
+        );
+
+        
+        // ─── Router ─────────────────────────────────────────────────────────────
+        const App = () => {
+            const ScrollToTop = () => {
+                const { pathname } = useLocation();
+                useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+                return null;
+            };
+
+            return (
+                <MemoryRouter>
+                    <ScrollToTop />
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/artisan-coffee" element={<ArtisanCoffee />} />
+                        <Route path="/bistro-menu" element={<BistroMenu />} />
+                        <Route path="/eco-juice" element={<EcoJuice />} />
+                        <Route path="/limited-tote" element={<LimitedTote />} />
+                        <Route path="/hk-street-art" element={<HkStreetArt />} />
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
